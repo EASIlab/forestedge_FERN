@@ -44,7 +44,7 @@ Density %>%
   tidyr::expand(DISTANCE_M, SUBPLOT, SPECIES, SIZE_CLASS) %>% 
   left_join(y = Density) %>% 
   mutate(COUNT = ifelse(is.na(COUNT), 0, COUNT),
-         UID = TRANSECT_ID) %>% 
+         STUDY_TRANSECT = TRANSECT_ID) %>% 
   separate(TRANSECT_ID, 
            into = c("STUDY", "TRANSECT"), 
            sep = "(?<=[A-Za-z])(?=[0-9])") -> Density
@@ -54,11 +54,13 @@ Density %>%
 
 # calculate total density
 Density %>% 
-  group_by(STUDY, TRANSECT, DISTANCE_M, SUBPLOT, SIZE_CLASS, UID) %>% 
+  group_by(STUDY, TRANSECT, DISTANCE_M, SUBPLOT, SIZE_CLASS, STUDY_TRANSECT) %>% 
   summarise(regeneration = sum(COUNT)) %>% 
   ungroup() -> Density
 
-
+Density$STUDY_TRANSECT_SAMPLEPOINT = as.factor(Density$DISTANCE_M)
+  
+  
 
 # Select data -------------------------------------------------------------
 
@@ -66,8 +68,6 @@ Density %>%
 # only studies with plots of 2x2m
 sel = c("ABCut", "ABFire", "ABLake", "BERip", "BRAtlCut", "ONFire", "QUCut", "QUCutSpruce", "QUFire")
 
-# only studies with plots of 2x2m next to cuts
-sel = c("ABCut", "BRAtlCut", "QUCut", "QUCutSpruce")
 
 # only four size classes
 sel_size = c("A", "B", "C", "D")
@@ -90,13 +90,14 @@ dat %>% mutate_if(is.character, as.factor) -> dat
 
 # flexible model with splines for illustration
 m_gam = gam(regeneration ~ s(DISTANCE_M, by = SIZE_CLASS, k = 5) 
-            # + s(TRANSECT, bs = "re")
-            + s(UID, SUBPLOT, bs = "re")
+            + s(STUDY, bs = "re")
+            + s(STUDY_TRANSECT, bs = "re")
+            + s(STUDY_TRANSECT_SAMPLEPOINT, bs = "re")
             , data = dat, family = "nb")
 
 # check assumptions
 res = simulateResiduals(m_gam)
-plot(res)
+plot(res, quantreg = T)
 testZeroInflation(res)
 # okayish
 
@@ -104,7 +105,7 @@ testZeroInflation(res)
 summary(m_gam)
 
 # plot model
-pred = predict_response(m_gam, c("DISTANCE_M [n=100]", "SIZE_CLASS"))
+pred = predict_response(m_gam, c("DISTANCE_M [n=10]", "SIZE_CLASS"))
 plot(pred, grid = T, use_theme = T, show_title = F)
 
 
