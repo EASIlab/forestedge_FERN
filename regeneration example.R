@@ -68,8 +68,6 @@ Density$STUDY_TRANSECT_SAMPLEPOINT = as.factor(paste(Density$STUDY_TRANSECT, Den
 # only studies with plots of 2x2m
 sel = c("ABCut", "ABFire", "ABLake", "BERip", "BRAtlCut", "ONFire", "QUCut", "QUCutSpruce", "QUFire")
 
-# only studies with plots of 2x2m next to cuts
-sel = c("ABCut", "BRAtlCut", "QUCut", "QUCutSpruce")
 
 # only four size classes
 sel_size = c("A", "B", "C", "D")
