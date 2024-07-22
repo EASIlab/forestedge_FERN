@@ -58,7 +58,7 @@ Density %>%
   summarise(regeneration = sum(COUNT)) %>% 
   ungroup() -> Density
 
-Density$STUDY_TRANSECT_SAMPLEPOINT = as.factor(Density$DISTANCE_M)
+Density$STUDY_TRANSECT_SAMPLEPOINT = as.factor(paste(Density$STUDY_TRANSECT, Density$DISTANCE_M))
   
   
 
@@ -68,6 +68,8 @@ Density$STUDY_TRANSECT_SAMPLEPOINT = as.factor(Density$DISTANCE_M)
 # only studies with plots of 2x2m
 sel = c("ABCut", "ABFire", "ABLake", "BERip", "BRAtlCut", "ONFire", "QUCut", "QUCutSpruce", "QUFire")
 
+# only studies with plots of 2x2m next to cuts
+sel = c("ABCut", "BRAtlCut", "QUCut", "QUCutSpruce")
 
 # only four size classes
 sel_size = c("A", "B", "C", "D")
@@ -108,7 +110,17 @@ summary(m_gam)
 pred = predict_response(m_gam, c("DISTANCE_M [n=10]", "SIZE_CLASS"))
 plot(pred, grid = T, use_theme = T, show_title = F)
 
+# RE
+coef = m_gam$coefficients
+hist(coef[grepl("STUDY)", names(coef))])
+hist(coef[grepl("TRANSECT)", names(coef))])
+hist(coef[grepl("POINT)", names(coef))])
 
 
+# test differences
+library(emmeans)
+emm = emmeans(m_gam, "DISTANCE_M", by = "SIZE_CLASS", at = list(DISTANCE_M = seq(100, 0, len = 21)))
+emm
+contrast(emm, method = "trt.vs.ctrl")
 
 
