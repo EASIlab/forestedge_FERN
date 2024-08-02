@@ -106,7 +106,10 @@ summary(m_gam)
 
 # plot model
 pred = predict_response(m_gam, c("DISTANCE_M [n=10]", "SIZE_CLASS"))
-plot(pred, grid = T, use_theme = T, show_title = F)
+plot(pred, grid = T, use_theme = T, show_title = F, colors = rep("black", 4))
+pdf("regeneration_at_edge.pdf", width = 5, height = 5)
+plot(pred, grid = T, use_theme = T, show_title = F, colors = rep("black", 4))
+dev.off()
 
 # RE
 coef = m_gam$coefficients
@@ -117,8 +120,9 @@ hist(coef[grepl("POINT)", names(coef))])
 
 # test differences
 library(emmeans)
-emm = emmeans(m_gam, "DISTANCE_M", by = "SIZE_CLASS", at = list(DISTANCE_M = seq(100, 0, len = 21)))
+emm = emmeans(m_gam, "DISTANCE_M", by = "SIZE_CLASS", 
+              at = list(DISTANCE_M = seq(100, 0, len = 21)))
 emm
-contrast(emm, method = "trt.vs.ctrl")
+contrast(emm, method = "trt.vs.ctrl", type = "response", adjust = "none")
 
 
